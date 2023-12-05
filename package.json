@@ -1,0 +1,16 @@
+{
+  "name": "jjwz",
+  "version": "1.0.0",
+  "author": "test12345",
+  "description": "绝句文章，群友一起写文章",
+  "main": "jjwz.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/test12345-pupil/yunzai-jjwz.git"
+  }
+}

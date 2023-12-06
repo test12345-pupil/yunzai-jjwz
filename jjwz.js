@@ -1,6 +1,8 @@
 import plugin from "../../lib/plugins/plugin.js";
 import fs from 'node:fs'
 import { jjwz_Server } from "./lib/jjwz_server.js";
+import cfg from "../../lib/config/config.js";
+
 
 // 修改自 https://gitee.com/xianxincoder/xianxin-plugin/blob/master/apps/blackjack.js
 
@@ -237,7 +239,7 @@ export class jueJuWenZhang extends plugin {
       await this.getGroupId();
       if (!this.group_id) return;
 
-      if (!this.e.member.is_owner && !this.e.member.is_admin && !this.e.group.is_owner && !this.e.group.is_admin) {
+      if (this.e.member.user_id != cfg.masterQQ && !this.e.member.is_owner && !this.e.member.is_admin && !this.e.group.is_owner && !this.e.group.is_admin) {
         this.e.reply('重置失败，只有主人与管理员能操作', true);
         return false;
       }

@@ -2,7 +2,7 @@ import plugin from "../../lib/plugins/plugin.js";
 import fs from 'node:fs'
 import { jjwz_Server } from "./lib/jjwz_server.js";
 import cfg from "../../lib/config/config.js";
-import { publicIp } from "public-ip";
+import { publicIpv4 } from "public-ip";
 import  { jjwz_listenport } from './config/config.js';
 
 
@@ -76,7 +76,7 @@ export class jueJuWenZhang extends plugin {
 
     async init(){
       try {  
-        public_ip = await publicIp.v4(); // 获取 IPv4 公网 IP 地址  
+        public_ip = await publicIpv4(); // 获取 IPv4 公网 IP 地址  
         console.log(`公网ip地址: ${public_ip}`);  
       } catch (error) { 
         public_ip = 'localhost'; 

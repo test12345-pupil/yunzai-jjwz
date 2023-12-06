@@ -62,7 +62,6 @@ export class jueJuWenZhang extends plugin {
               {
               reg: "^(#)?重置文章.*$",
               fnc: "resetArticle",
-              permission: "admin",
               },
         ],
       });
@@ -237,9 +236,13 @@ export class jueJuWenZhang extends plugin {
     async resetArticle(){
       await this.getGroupId();
       if (!this.group_id) return;
+
+      if (!this.e.member.is_owner && !this.e.member.is_admin && !this.e.group.is_owner && !this.e.group.is_admin) {
+        this.e.reply('重置失败，只有主人与管理员能操作', true);
+        return false;
+      }
   
       const content = this.e.msg.replace(/^(#)?重置文章/, "");
-  
   
       jjwzArticles[this.group_id] = new Array();
   

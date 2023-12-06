@@ -2,6 +2,8 @@ import plugin from "../../lib/plugins/plugin.js";
 import fs from 'node:fs'
 import { jjwz_Server } from "./lib/jjwz_server.js";
 import cfg from "../../lib/config/config.js";
+import { publicIp } from "public-ip";
+import  { jjwz_listenport } from './config/config.js';
 
 
 // 修改自 https://gitee.com/xianxincoder/xianxin-plugin/blob/master/apps/blackjack.js
@@ -21,6 +23,9 @@ else jjwz_cd2 = jjwz_cd2.split(',').map(x=>Number(x));
 
 const jjwz_save_path = './data/jjwz/';
 const reg_valid_titles = /^[^/\\]*$/;
+
+let public_ip;
+let server;
 
 /*
 例：jjwz_cd2 = [-1, 100000000, 40, 30, 20, 0]
@@ -70,13 +75,23 @@ export class jueJuWenZhang extends plugin {
     }
 
     async init(){
+      try {  
+        public_ip = await publicIp.v4(); // 获取 IPv4 公网 IP 地址  
+        console.log(`公网ip地址: ${public_ip}`);  
+      } catch (error) { 
+        public_ip = 'localhost'; 
+        console.log('jjwz_server 未找到公网ip地址，请使用localhost:11451访问');  
+      }
+  
+      console.log(public_ip);
+
       if (!fs.existsSync(jjwz_save_path)) {
         fs.mkdirSync(jjwz_save_path);
       }
-      if(!this.server){
-        this.server = new jjwz_Server(jjwz_save_path);
-      }else this.server.close();
-      this.server.listen(11451);
+      if(!server){
+        server = new jjwz_Server(jjwz_save_path);
+      }else server.close();
+      server.listen(jjwz_listenport);
     }
   
     /** 群号key */
@@ -96,19 +111,22 @@ export class jueJuWenZhang extends plugin {
       if (!this.group_id) return;
   
       if (!jjwzArticles[this.group_id]) jjwzArticles[this.group_id] = new Array();
-  
+
       const message = ["绝句文章帮助",
           "\n#查看文章： 查看当前文章",
           `\n(#?续写|>)巨大多喝水： 包含至多5个字符，cd为${jjwz_cd}秒。可以撤回`,
           `\n  无法连续续写两次，若前面仅有[1-${jjwz_cd2.length-2}]次续写，则需等待至少[${jjwz_cd2.slice(2)}]秒`,
           "\n#完成文章 炄勺，砒： 题名并完成文章",
+          server.getURI(public_ip, this.group_id),
           emptyArticle === 1 ? "\n当前没有文章，可直接#续写" : ""];
   
       this.e.reply(message);
     }
   
-    renderArticle(articleArray){
-      return articleArray.map(x => x.content).join('');
+    renderArticle(articleArray, full){
+      let article = articleArray.map(x => x.content).join('');
+      if(full || article.length <= 50) return article;
+      else return '...' + article.slice(-50,);
     }
   
     /**
@@ -124,7 +142,7 @@ export class jueJuWenZhang extends plugin {
           return;
       }
       const message = ["当前文章：" ,
-       this.renderArticle(jjwzArticles[this.group_id])];
+       this.renderArticle(jjwzArticles[this.group_id], true)];
   
       this.e.reply(message);
     }
@@ -168,7 +186,7 @@ export class jueJuWenZhang extends plugin {
       await this.getGroupId();
       if (!this.group_id) return;
   
-      if (jjwzArticles[this.group_id].length < 10 && this.renderArticle(jjwzArticles[this.group_id]).length < 30){
+      if (jjwzArticles[this.group_id].length < 10 && this.renderArticle(jjwzArticles[this.group_id], true).length < 30){
           this.e.reply(["文章太短了!"], true);
           return;
       }
@@ -192,9 +210,10 @@ export class jueJuWenZhang extends plugin {
       }
   
       const message = ["《"+title+"》\n",
-          this.renderArticle(jjwzArticles[this.group_id])];
+          this.renderArticle(jjwzArticles[this.group_id], true),
+          server.getURI(public_ip, this.group_id)];
   
-      fs.writeFileSync(file_location, this.renderArticle(jjwzArticles[this.group_id]));
+      fs.writeFileSync(file_location, this.renderArticle(jjwzArticles[this.group_id], true));
 
       this.e.reply(message, true);
 
@@ -255,7 +274,7 @@ export class jueJuWenZhang extends plugin {
         message_id: 'undefined',
         reply_id: 'undefined',
       });
-      const message = [this.renderArticle(jjwzArticles[this.group_id])];
+      const message = [this.renderArticle(jjwzArticles[this.group_id], true)];
   
       this.e.reply(message, true);
     }

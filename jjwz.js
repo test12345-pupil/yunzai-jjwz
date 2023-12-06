@@ -168,7 +168,7 @@ export class jueJuWenZhang extends plugin {
       await this.getGroupId();
       if (!this.group_id) return;
   
-      if (jjwzArticles[this.group_id].length < 10){
+      if (jjwzArticles[this.group_id].length < 10 && this.renderArticle(jjwzArticles[this.group_id]).length < 30){
           this.e.reply(["文章太短了!"], true);
           return;
       }

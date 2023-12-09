@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { jjwz_Server } from "./lib/jjwz_server.js";
 import cfg from "../../lib/config/config.js";
 import { publicIpv4 } from "public-ip";
-import  { jjwz_listenport } from './config/config.js';
+import  { jjwz_content_maxlength, jjwz_header_maxlength, jjwz_listenport } from './config/config.js';
 
 
 // 修改自 https://gitee.com/xianxincoder/xianxin-plugin/blob/master/apps/blackjack.js
@@ -54,7 +54,7 @@ export class jueJuWenZhang extends plugin {
               fnc: "viewArticle",
               },
               {
-              reg: "^((#)?(续写)|>).*$",
+              reg: "^((#)?(续写)|>|add).*$",
               fnc: "continueWriting",
               },
               {
@@ -114,19 +114,19 @@ export class jueJuWenZhang extends plugin {
 
       const message = ["绝句文章帮助",
           "\n#查看文章： 查看当前文章",
-          `\n(#?续写|>)巨大多喝水： 包含至多5个字符，cd为${jjwz_cd}秒。可以撤回`,
+          `\n(#?续写|>)巨大多喝水： 包含至多${jjwz_content_maxlength}个字符，文章开头可以包含${jjwz_header_maxlength}个字符。可以撤回`,
           `\n  无法连续续写两次，若前面仅有[1-${jjwz_cd2.length-2}]次续写，则需等待至少[${jjwz_cd2.slice(2)}]秒`,
           "\n#完成文章 炄勺，砒： 题名并完成文章",
           server.getURI(public_ip, this.group_id),
-          emptyArticle === 1 ? "\n当前没有文章，可直接#续写" : ""];
+          emptyArticle === 1 ? `\n当前没有文章，可直接#续写至多${jjwz_header_maxlength}个字符` : ""];
   
       this.e.reply(message);
     }
   
     renderArticle(articleArray, full){
       let article = articleArray.map(x => x.content).join('');
-      if(full || article.length <= 50) return article;
-      else return '...' + article.slice(-50,);
+      if(full || article.length <= 200) return article;
+      else return '...' + article.slice(-200,);
     }
   
     /**
@@ -147,6 +147,17 @@ export class jueJuWenZhang extends plugin {
       this.e.reply(message);
     }
   
+    checkContentValidity(content, is_header){
+      if(typeof content != 'string') return false;
+      if(content.length == 0) return false;
+      if(!is_header){
+          if(content.length > jjwz_content_maxlength) return false;
+      }else{
+          if(content.length > jjwz_header_maxlength) return false;
+      }
+      return true;
+    }
+
     /**
      * rule - #续写
      * @returns
@@ -155,9 +166,9 @@ export class jueJuWenZhang extends plugin {
       await this.getGroupId();
       if (!this.group_id) return;
   
-      const content = this.e.msg.replace(/^((#)?(续写)|>)/, "").trim();
+      const content = this.e.msg.replace(/^((#)?(续写)|>|add)/, "");
   
-      if(content.length > 5 || content.length == 0){
+      if(!this.checkContentValidity(content, jjwzArticles[this.group_id].length === 0)){
           return;
       }
   

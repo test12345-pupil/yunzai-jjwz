@@ -117,7 +117,7 @@ export class jueJuWenZhang extends plugin {
           `\n(#?续写|>)巨大多喝水： 包含至多${jjwz_content_maxlength}个字符，文章开头可以包含${jjwz_header_maxlength}个字符。可以撤回`,
           `\n  无法连续续写两次，若前面仅有[1-${jjwz_cd2.length-2}]次续写，则需等待至少[${jjwz_cd2.slice(2)}]秒`,
           "\n#完成文章 炄勺，砒： 题名并完成文章",
-          server.getURI(public_ip, this.group_id),
+          server.getURI(public_ip, this.group_id, this.e),
           emptyArticle === 1 ? `\n当前没有文章，可直接#续写至多${jjwz_header_maxlength}个字符` : ""];
   
       this.e.reply(message);
@@ -222,7 +222,7 @@ export class jueJuWenZhang extends plugin {
   
       const message = ["《"+title+"》\n",
           this.renderArticle(jjwzArticles[this.group_id], true),
-          server.getURI(public_ip, this.group_id)];
+          server.getURI(public_ip, this.group_id, this.e)];
   
       fs.writeFileSync(file_location, this.renderArticle(jjwzArticles[this.group_id], true));
 

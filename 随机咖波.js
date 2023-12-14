@@ -25,6 +25,9 @@ fs.readdirSync(random_image_path).forEach(file => {
   }
 });
 
+const invoke_cd = 300 * 1000;
+let last_invoke_time = {};
+
 
 export class random_capoos extends plugin {
     constructor(e) {
@@ -45,6 +48,12 @@ export class random_capoos extends plugin {
     }
   
     async randomImage(){
+      let user_id = `${this.e.group_id};${this.e.sender.user_id}`;
+      let now_time = Date.now();
+      if(last_invoke_time[user_id] && now_time - last_invoke_time[user_id] <= invoke_cd){
+        return;
+      }
+      last_invoke_time[user_id] = now_time;
       const ImageSetName = this.e.msg.replace(/^(#)?随机/, "");
       if(random_image_data[ImageSetName]){
         let len = random_image_data[ImageSetName].length;

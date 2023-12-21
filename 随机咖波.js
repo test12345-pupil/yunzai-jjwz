@@ -25,7 +25,10 @@ fs.readdirSync(random_image_path).forEach(file => {
   }
 });
 
-const invoke_cd = 300 * 1000;
+const groups_cd = {
+  677042087 : 60 * 60 * 1000,
+};
+
 let last_invoke_time = {};
 
 
@@ -50,7 +53,9 @@ export class random_capoos extends plugin {
     async randomImage(){
       let user_id = `${this.e.group_id};${this.e.sender.user_id}`;
       let now_time = Date.now();
-      if(last_invoke_time[user_id] && now_time - last_invoke_time[user_id] <= invoke_cd){
+      if(last_invoke_time[user_id] && 
+        groups_cd[this.e.group_id] &&
+        now_time - last_invoke_time[user_id] <= groups_cd[this.e.group_id]){
         return;
       }
       last_invoke_time[user_id] = now_time;

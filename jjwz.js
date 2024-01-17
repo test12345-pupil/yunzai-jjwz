@@ -21,6 +21,13 @@ let jjwz_cd2 = await redis.get(jjwz_cd2_key);
 if(!jjwz_cd2) jjwz_cd2 = [-1, 1000000000, 120, 60, 30];
 else jjwz_cd2 = jjwz_cd2.split(',').map(x=>Number(x));
 
+jjwzArticles = await redis.get(`Yunzai:jjwz:jjwzArticles`);
+
+console.log(jjwzArticles);
+
+if(jjwzArticles === null) jjwzArticles = {};
+else jjwzArticles = JSON.parse(jjwzArticles);
+
 const jjwz_save_path = './data/jjwz/';
 const reg_valid_titles = /^[^/\\]*$/;
 
@@ -191,6 +198,8 @@ export class jueJuWenZhang extends plugin {
       const reply = await this.e.reply(message, true);
   
       jjwzArticles[this.group_id][index].reply_id = reply.message_id;
+
+      redis.set(`Yunzai:jjwz:jjwzArticles`, JSON.stringify(jjwzArticles));
     }
   
     async endAndEntitle(){
@@ -229,6 +238,7 @@ export class jueJuWenZhang extends plugin {
       this.e.reply(message, true);
 
       jjwzArticles[this.group_id] = new Array();
+      redis.set(`Yunzai:jjwz:jjwzArticles`, JSON.stringify(jjwzArticles));
     }
   
     /** 获取群号 */
@@ -288,6 +298,7 @@ export class jueJuWenZhang extends plugin {
       const message = [this.renderArticle(jjwzArticles[this.group_id], true)];
   
       this.e.reply(message, true);
+      redis.set(`Yunzai:jjwz:jjwzArticles`, JSON.stringify(jjwzArticles));
     }
 }
 
@@ -321,6 +332,7 @@ export class jueJuWenZhangRecall extends plugin {
       jjwzArticles[this.group_id].global_timer = Date.now();
       if(await this.e.group.recallMsg(jjwzArticles[this.group_id].at(-1).reply_id)){
         jjwzArticles[this.group_id].pop()
+        redis.set(`Yunzai:jjwz:jjwzArticles`, JSON.stringify(jjwzArticles));
       }
     }
 

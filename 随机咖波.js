@@ -26,7 +26,7 @@ fs.readdirSync(random_image_path).forEach(file => {
 });
 
 const groups_cd = {
-  677042087 : 60 * 60 * 1000,
+  672728860  : 60 * 60 * 1000,
 };
 
 let last_invoke_time = {};
